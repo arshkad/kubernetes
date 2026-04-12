@@ -69,7 +69,7 @@ function initData() {
     { time:'1d',  type:'Normal',  obj:'Namespace/default',                reason:'Created',             msg:'Namespace created by cluster-admin',        count:1  },
     { time:'30d', type:'Normal',  obj:'Node/node-1',                      reason:'RegisteredNode',      msg:'Node joined cluster successfully',          count:1  },
   ];
-  
+
   renderAll();
   initChart();
   initRing();
@@ -79,3 +79,29 @@ function initData() {
   updateYamlPreview();
   initTerminal();
 }
+
+// ---- RENDER ALL ----
+function renderAll() {
+    renderPods();
+    renderDeployments();
+    renderServices();
+    renderStatefulSets();
+    renderJobs();
+    renderCronJobs();
+    renderEvents();
+    updateKPIs();
+  }
+  
+  function updateKPIs() {
+    document.getElementById('kpi-pods').textContent = pods.length;
+    document.getElementById('kpi-deps').textContent = deployments.length;
+    document.getElementById('nb-pods').textContent = pods.length;
+    document.getElementById('nb-deps').textContent = deployments.length;
+    document.getElementById('nb-svcs').textContent = services.length;
+    document.getElementById('nb-sts').textContent = statefulsets.length;
+    document.getElementById('nb-events').textContent = events.filter(e => e.type === 'Warning').length;
+    const failedJobs = jobs.filter(j => j.status === 'Failed').length + cronjobs.filter(c => c.lastStatus === 'Failed').length;
+    document.getElementById('nb-jobs').textContent = jobs.length + cronjobs.length;
+    document.getElementById('nb-nodes').textContent = 3;
+  }
+  
