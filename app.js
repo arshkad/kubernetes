@@ -161,3 +161,35 @@ function renderDeployments() {
     </tr>`;
   }).join('');
 }
+
+// ---- SERVICES ----
+function renderServices() {
+  const tbody = document.getElementById('svcs-tbody');
+  if (!tbody) return;
+  tbody.innerHTML = services.map(s => {
+    const typeCls = {LoadBalancer:'running', NodePort:'pending', ClusterIP:'completed'}[s.type] || 'completed';
+    return `<tr>
+      <td class="mono">${s.name}</td>
+      <td><span class="badge ${typeCls}">${s.type}</span></td>
+      <td class="mono muted">${s.clusterIP}</td>
+      <td class="mono" style="color:${s.externalIP!=='<none>'?'var(--teal)':'var(--text3)'}">${s.externalIP}</td>
+      <td class="mono muted">${s.ports}</td>
+      <td class="mono muted">${s.selector}</td>
+      <td class="muted">${s.age}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ---- STATEFULSETS ----
+function renderStatefulSets() {
+  const tbody = document.getElementById('sts-tbody');
+  if (!tbody) return;
+  tbody.innerHTML = statefulsets.map(s => `<tr>
+    <td class="mono">${s.name}</td>
+    <td class="mono">${s.replicas}</td>
+    <td style="color:${s.ready===s.replicas?'var(--green)':'var(--amber)'}" class="mono">${s.ready}/${s.replicas}</td>
+    <td class="muted">${s.storageClass}</td>
+    <td class="mono muted">${s.pvcTemplate}</td>
+    <td class="muted">${s.age}</td>
+  </tr>`).join('');
+}
