@@ -193,3 +193,49 @@ function renderStatefulSets() {
     <td class="muted">${s.age}</td>
   </tr>`).join('');
 }
+
+// ---- JOBS ----
+function renderJobs() {
+  const tbody = document.getElementById('jobs-tbody');
+  if (!tbody) return;
+  tbody.innerHTML = jobs.map(j => {
+    const cls = j.status === 'Complete' ? 'completed' : 'failed';
+    return `<tr>
+      <td class="mono">${j.name}</td>
+      <td><span class="badge ${cls}">${j.status}</span></td>
+      <td class="mono muted">${j.completions}</td>
+      <td class="mono muted">${j.duration}</td>
+      <td class="muted">${j.age}</td>
+    </tr>`;
+  }).join('');
+}
+
+function renderCronJobs() {
+  const tbody = document.getElementById('cronjobs-tbody');
+  if (!tbody) return;
+  tbody.innerHTML = cronjobs.map((c, i) => {
+    const cls = c.lastStatus === 'Complete' ? 'completed' : 'failed';
+    return `<tr>
+      <td class="mono">${c.name}</td>
+      <td class="mono" style="color:var(--purple)">${c.schedule}</td>
+      <td class="muted">${c.lastRun}</td>
+      <td><span class="badge ${cls}">${c.lastStatus}</span></td>
+      <td class="mono">${c.active}</td>
+      <td><button class="tiny-btn" onclick="triggerCronJob(${i})">▶ Run Now</button></td>
+    </tr>`;
+  }).join('');
+}
+// ---- EVENTS ----
+function renderEvents(typeFilter) {
+  const tbody = document.getElementById('events-tbody');
+  if (!tbody) return;
+  const filtered = typeFilter && typeFilter !== 'all' ? events.filter(e => e.type === typeFilter) : events;
+  tbody.innerHTML = filtered.map(e => `<tr>
+    <td class="muted mono" style="white-space:nowrap">${e.time}</td>
+    <td><span class="badge ${e.type==='Warning'?'warn-type':'completed'}">${e.type}</span></td>
+    <td class="mono muted" style="white-space:nowrap;font-size:10px">${e.obj}</td>
+    <td style="color:var(--blue);font-size:11px">${e.reason}</td>
+    <td class="mono muted">${e.count}</td>
+    <td style="font-size:11px;color:var(--text2)">${e.msg}</td>
+  </tr>`).join('');
+}
