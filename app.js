@@ -852,3 +852,216 @@ async function handleTermInput(e) {
 
   out.scrollTop = out.scrollHeight;
 }
+function parseCmd(cmd) {
+  // Split on spaces but respect quoted strings
+  const parts = [];
+  let current = '', inQuote = false;
+  for (const ch of cmd) {
+    if (ch === '"' || ch === "'") { inQuote = !inQuote; }
+    else if (ch === ' ' && !inQuote) { if (current) { parts.push(current); current = ''; } }
+    else { current += ch; }
+  }
+  if (current) parts.push(current);
+  return parts;
+}
+
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+function isErrorLine(l) { return /error|fail|crash|kill/i.test(l); }
+function isWarnLine(l)  { return /warn|pending|unknown/i.test(l); }
+
+function renderHelp() {
+  const mode = serverOnline ? '<span class="t-ok">Real kubectl — commands run against your cluster</span>' : '<span class="t-hdr">Simulated mode — run node server.js to use real kubectl</span>';
+  return `${mode}
+<span class="t-hdr">─────────────────────────────────────────────</span>
+<span class="t-out">  kubectl get pods / deployments / services</span>
+<span class="t-out">  kubectl get nodes / namespaces / pvc / events</span>
+<span class="t-out">  kubectl get configmaps / secrets / ingress</span>
+<span class="t-out">  kubectl describe pod &lt;name&gt;</span>
+<span class="t-out">  kubectl describe deployment &lt;name&gt;</span>
+<span class="t-out">  kubectl logs &lt;pod&gt; [-n namespace]</span>
+<span class="t-out">  kubectl top pods / nodes</span>
+<span class="t-out">  kubectl rollout status deployment/&lt;name&gt;</span>
+<span class="t-out">  kubectl rollout restart deployment/&lt;name&gt;</span>
+<span class="t-out">  kubectl cluster-info</span>
+<span class="t-out">  kubectl version</span>
+<span class="t-hdr">─────────────────────────────────────────────</span>
+<span class="t-hdr">  ↑/↓  history    Tab  autocomplete</span>
+`;
+}
+
+// Simulation fallbacks (used when server is offline)
+const simCommands = {
+  'kubectl get pods': () => {
+    let o = `<span class="t-hdr">NAME                             READY   STATUS    RESTARTS   AGE</span>\n`;
+    pods.forEach(p => { o += `<span class="${p.status==='Failed'?'t-err':p.status==='Pending'?'t-warn':'t-out'}">${p.name.padEnd(32)} ${p.ready.padEnd(7)} ${p.status.padEnd(9)} ${String(p.restarts).padEnd(10)} ${p.age}</span>\n`; });
+    return o;
+  },
+  'kubectl get deployments': () => {
+    let o = `<span class="t-hdr">NAME             READY   UP-TO-DATE   AVAILABLE   AGE</span>\n`;
+    deployments.forEach(d => { o += `<span class="t-out">${d.name.padEnd(16)} ${`${d.available}/${d.replicas}`.padEnd(7)} ${String(d.replicas).padEnd(12)} ${String(d.available).padEnd(11)} ${d.age}</span>\n`; });
+    return o;
+  },
+  'kubectl get services': () => {
+    let o = `<span class="t-hdr">NAME         TYPE           CLUSTER-IP      EXTERNAL-IP     PORT(S)</span>\n`;
+    services.forEach(s => { o += `<span class="t-out">${s.name.padEnd(12)} ${s.type.padEnd(15)} ${s.clusterIP.padEnd(15)} ${s.externalIP.padEnd(15)} ${s.ports}</span>\n`; });
+    return o;
+  },
+  'kubectl get nodes': () =>
+    `<span class="t-hdr">NAME     STATUS   ROLES    AGE   VERSION</span>\n<span class="t-out">node-1   Ready    worker   30d   v1.28.4</span>\n<span class="t-out">node-2   Ready    worker   30d   v1.28.4</span>\n<span class="t-out">node-3   Ready    worker   30d   v1.28.3</span>\n`,
+  'kubectl get namespaces': () =>
+    `<span class="t-hdr">NAME              STATUS   AGE</span>\n<span class="t-out">default           Active   30d</span>\n<span class="t-out">kube-system       Active   30d</span>\n<span class="t-out">monitoring        Active   15d</span>\n<span class="t-out">staging           Active   10d</span>\n`,
+  'kubectl get pvc': () =>
+    `<span class="t-hdr">NAME            STATUS   VOLUME        CAPACITY   ACCESS MODES   STORAGECLASS</span>\n<span class="t-out">postgres-data   Bound    pvc-a1b2c3   100Gi      RWO            standard-ssd</span>\n<span class="t-out">redis-data      Bound    pvc-d4e5f6   20Gi       RWO            standard-ssd</span>\n`,
+  'kubectl top pods': () => {
+    let o = `<span class="t-hdr">NAME                             CPU(cores)   MEMORY(bytes)</span>\n`;
+    pods.filter(p=>p.status==='Running').forEach(p => { o += `<span class="t-out">${p.name.padEnd(32)} ${`${Math.round(p.cpu*15)}m`.padEnd(12)} ${Math.round(p.mem*5)}Mi</span>\n`; });
+    return o;
+  },
+  'kubectl top nodes': () =>
+    `<span class="t-hdr">NAME     CPU(cores)   CPU%   MEMORY(bytes)   MEMORY%</span>\n<span class="t-out">node-1   1168m        29%    4821Mi          60%</span>\n<span class="t-out">node-2   840m         21%    3621Mi          45%</span>\n<span class="t-out">node-3   1050m        26%    5461Mi          68%</span>\n`,
+  'kubectl cluster-info': () =>
+    `<span class="t-ok">Kubernetes control plane is running at https://34.72.1.44</span>\n<span class="t-ok">CoreDNS is running at https://34.72.1.44/api/v1/namespaces/kube-system/services/kube-dns</span>\n`,
+  'kubectl version': () =>
+    `<span class="t-out">Client Version: v1.28.4</span>\n<span class="t-out">Server Version: v1.28.4</span>\n`,
+};
+
+function simDescribe(cmd) {
+  const parts = cmd.split(' ');
+  const kind = parts[2] || 'resource';
+  const name = parts[3] || '<name>';
+  return `<span class="t-hdr">Name:         ${name}</span>\n<span class="t-out">Namespace:    default</span>\n<span class="t-out">Labels:       app=${name}</span>\n<span class="t-out">Annotations:  kubectl.kubernetes.io/last-applied-configuration</span>\n<span class="t-hdr">Events:</span>\n<span class="t-out">  Normal  Scheduled  5m   default-scheduler  Successfully assigned</span>\n<span class="t-out">  Normal  Pulled     4m   kubelet            Container image pulled</span>\n<span class="t-out">  Normal  Started    4m   kubelet            Started container</span>\n`;
+}
+
+function generateLogs(pod) {
+  const lines = [
+    `${ts()} INFO  Starting application on port 8080`,
+    `${ts()} INFO  Connected to database successfully`,
+    `${ts()} INFO  Redis connection established`,
+    `${ts()} INFO  GET /api/health 200 OK (2ms)`,
+    `${ts()} INFO  GET /api/users 200 OK (14ms)`,
+    `${ts()} WARN  Slow query detected: 1247ms`,
+    `${ts()} INFO  POST /api/orders 201 Created (8ms)`,
+    `${ts()} INFO  Cache hit ratio: 94.2%`,
+  ];
+  return lines.map(l => `<span class="${l.includes('WARN')?'t-warn':'t-out'}">${escHtml(l)}</span>`).join('\n') + '\n';
+}
+
+function ts() { return new Date().toISOString().replace('T',' ').substring(0,19); }
+
+// ---- POD MODAL ----
+function showPodModal(i) {
+  const p = pods[i];
+  if (!p) return;
+  document.getElementById('modal-title').textContent = p.name;
+  document.getElementById('modal-body').innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
+      <div class="nc-meta-item"><div class="nc-meta-label">Status</div><div><span class="badge ${p.status.toLowerCase()}">${p.status}</span></div></div>
+      <div class="nc-meta-item"><div class="nc-meta-label">Node</div><div class="nc-meta-val mono">${p.node}</div></div>
+      <div class="nc-meta-item"><div class="nc-meta-label">Image</div><div class="nc-meta-val mono" style="font-size:10px;word-break:break-all">${p.image}</div></div>
+      <div class="nc-meta-item"><div class="nc-meta-label">Restarts</div><div class="nc-meta-val" style="color:${p.restarts>0?'var(--amber)':'var(--green)'}">${p.restarts}</div></div>
+      <div class="nc-meta-item"><div class="nc-meta-label">CPU Usage</div><div class="nc-meta-val">${p.status==='Running'?p.cpu+'%':'—'}</div></div>
+      <div class="nc-meta-item"><div class="nc-meta-label">Memory</div><div class="nc-meta-val">${p.status==='Running'?p.mem+'%':'—'}</div></div>
+    </div>
+    <div style="font-size:11px;color:var(--text3);margin-bottom:6px;text-transform:uppercase;letter-spacing:.08em">Recent Logs</div>
+    <div class="log-pre">${generateLogs(p.name)}</div>
+  `;
+  document.getElementById('pod-modal').style.display = 'flex';
+}
+
+function closePodModal(e) {
+  if (e.target === document.getElementById('pod-modal')) {
+    document.getElementById('pod-modal').style.display = 'none';
+  }
+}
+
+// ---- TABS ----
+function switchTab(btn, panelId) {
+  const parent = btn.closest('.view');
+  parent.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  parent.querySelectorAll('.tab-panel').forEach(p => { p.classList.remove('active'); p.style.display = 'none'; });
+  btn.classList.add('active');
+  const panel = document.getElementById(panelId);
+  if (panel) { panel.classList.add('active'); panel.style.display = 'block'; }
+}
+
+// ---- UTILS ----
+function randStr(n) {
+  const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+  return Array.from({length:n}, () => chars[Math.floor(Math.random()*chars.length)]).join('');
+}
+
+function filterTable(tbodyId, query) {
+  const tbody = document.getElementById(tbodyId);
+  if (!tbody) return;
+  const q = query.toLowerCase();
+  Array.from(tbody.rows).forEach(row => {
+    row.style.display = row.textContent.toLowerCase().includes(q) ? '' : 'none';
+  });
+}
+
+function addEvent(type, obj, reason, msg) {
+  events.unshift({ time: '0s', type, obj, reason, msg, count: 1 });
+  document.getElementById('nb-events').textContent = events.filter(e => e.type === 'Warning').length;
+  renderDashEvents();
+}
+
+function switchNS(ns) { currentNS = ns; toast(`Switched to namespace: ${ns}`); }
+function refreshAll() {
+  pods.forEach(p => {
+    if (p.status === 'Running') {
+      p.cpu = Math.max(5, Math.min(95, p.cpu + Math.floor((Math.random()-.5)*12)));
+      p.mem = Math.max(10, Math.min(90, p.mem + Math.floor((Math.random()-.4)*6)));
+    }
+  });
+  renderPods(); initRing();
+  toast('↺ Cluster state refreshed');
+}
+
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(t._tid);
+  t._tid = setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+// ---- LIVE UPDATES ----
+function tick() {
+  // Drift pod metrics
+  pods.forEach(p => {
+    if (p.status === 'Running') {
+      p.cpu = Math.max(5, Math.min(95, p.cpu + Math.floor((Math.random()-.5)*4)));
+      p.mem = Math.max(10, Math.min(90, p.mem + Math.floor((Math.random()-.4)*2)));
+    }
+  });
+
+  // Resource history
+  const avgCPU = Math.round(pods.filter(p=>p.status==='Running').reduce((s,p)=>s+p.cpu,0) / Math.max(1, pods.filter(p=>p.status==='Running').length));
+  const avgMem = Math.round(pods.filter(p=>p.status==='Running').reduce((s,p)=>s+p.mem,0) / Math.max(1, pods.filter(p=>p.status==='Running').length));
+  resourceHistory.cpu.push(avgCPU); if (resourceHistory.cpu.length > MAX_HISTORY) resourceHistory.cpu.shift();
+  resourceHistory.mem.push(avgMem); if (resourceHistory.mem.length > MAX_HISTORY) resourceHistory.mem.shift();
+
+  // Re-render active view
+  const activeView = document.querySelector('.view.active');
+  if (!activeView) return;
+  const id = activeView.id;
+  if (id === 'view-dashboard') { drawChart(); renderNodeMini(); }
+  if (id === 'view-pods') renderPods();
+}
+
+function updateClock() {
+  const now = new Date();
+  const pad = n => String(n).padStart(2,'0');
+  document.title = `KubeOps Pro — ${pad(now.getHours())}:${pad(now.getMinutes())}`;
+}
+
+// ---- BOOT ----
+window.addEventListener('DOMContentLoaded', async () => {
+  initData();
+  showView('dashboard');
+  await detectServer();   // check if server.js is running — loads real data if so
+  initTerminal();         // re-init after server detection so banner is correct
+  setInterval(tick, 3000);
+  setInterval(updateClock, 30000);
+});
