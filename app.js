@@ -157,3 +157,78 @@ function updateKPIs() {
   document.getElementById('nb-jobs').textContent = jobs.length + cronjobs.length;
   document.getElementById('nb-nodes').textContent = 3;
 }
+
+// ---- PODS ----
+function renderPods() {
+  const filter = document.getElementById('pod-status-filter')?.value || 'all';
+  const tbody = document.getElementById('pods-tbody');
+  if (!tbody) return;
+  const filtered = pods.filter(p => filter === 'all' || p.status === filter);
+  tbody.innerHTML = filtered.map((p, i) => {
+    const cpuClass = p.cpu > 80 ? 'p-red' : p.cpu > 60 ? 'p-amber' : 'p-cyan';
+    const memClass = p.mem > 80 ? 'p-red' : p.mem > 60 ? 'p-amber' : 'p-green';
+    const statusBadge = {Running:'running', Pending:'pending', Failed:'failed', Terminating:'terminating'}[p.status] || 'pending';
+    return `<tr>
+      <td style="width:20px;padding-right:0">
+        <div style="width:6px;height:6px;border-radius:50%;background:${p.status==='Running'?'var(--green)':p.status==='Pending'?'var(--amber)':'var(--red)'}"></div>
+      </td>
+      <td class="mono" style="max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${p.name}">${p.name}</td>
+      <td class="muted mono">${p.ns}</td>
+      <td><span class="badge ${statusBadge}">${p.status}</span></td>
+      <td style="color:${p.restarts>0?'var(--amber)':'var(--text3)'};" class="mono">${p.restarts}</td>
+      <td>${p.status==='Running'?`<div class="prog-wrap"><div class="prog"><div class="prog-fill ${cpuClass}" style="width:${p.cpu}%"></div></div><span class="prog-text">${p.cpu}%</span></div>`:'<span class="muted">—</span>'}</td>
+      <td>${p.status==='Running'?`<div class="prog-wrap"><div class="prog"><div class="prog-fill ${memClass}" style="width:${p.mem}%"></div></div><span class="prog-text">${p.mem}%</span></div>`:'<span class="muted">—</span>'}</td>
+      <td class="mono muted">${p.node}</td>
+      <td class="muted">${p.age}</td>
+      <td><div class="action-btns">
+        <button class="tiny-btn" onclick="showPodModal(${pods.indexOf(p)})">Logs</button>
+        <button class="tiny-btn" onclick="deletePod(${pods.indexOf(p)})">✕</button>
+      </div></td>
+    </tr>`;
+  }).join('');
+}
+
+// ---- DEPLOYMENTS ----
+function renderDeployments() {
+  const tbody = document.getElementById('deps-tbody');
+  if (!tbody) return;
+  tbody.innerHTML = deployments.map((d, i) => {
+    const ok = d.available === d.replicas;
+    return `<tr>
+      <td class="mono">${d.name}</td>
+      <td class="mono muted" style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${d.image}">${d.image}</td>
+      <td class="mono">${d.replicas}</td>
+      <td><span style="color:${ok?'var(--green)':'var(--amber)'}" class="mono">${d.available}/${d.replicas}</span></td>
+      <td class="muted">${d.strategy}</td>
+      <td class="mono muted">${d.cpuReq}</td>
+      <td class="mono muted">${d.memLim}</td>
+      <td class="muted">${d.age}</td>
+      <td><div class="scale-ctrl">
+        <button class="sc-btn" onclick="scaleDep(${i},-1)">−</button>
+        <span class="sc-num" id="sc-${i}">${d.replicas}</span>
+        <button class="sc-btn" onclick="scaleDep(${i},1)">+</button>
+      </div></td>
+      <td><div class="action-btns">
+        <button class="tiny-btn" onclick="rollout(${i})">↺ Rollout</button>
+        <button class="tiny-btn" onclick="deleteDep(${i})">✕</button>
+      </div></td>
+    </tr>`;
+  }).join('');
+}
+// ---- SERVICES ----
+function renderServices() {
+  const tbody = document.getElementById('svcs-tbody');
+  if (!tbody) return;
+  tbody.innerHTML = services.map(s => {
+    const typeCls = {LoadBalancer:'running', NodePort:'pending', ClusterIP:'completed'}[s.type] || 'completed';
+    return `<tr>
+      <td class="mono">${s.name}</td>
+      <td><span class="badge ${typeCls}">${s.type}</span></td>
+      <td class="mono muted">${s.clusterIP}</td>
+      <td class="mono" style="color:${s.externalIP!=='<none>'?'var(--teal)':'var(--text3)'}">${s.externalIP}</td>
+      <td class="mono muted">${s.ports}</td>
+      <td class="mono muted">${s.selector}</td>
+      <td class="muted">${s.age}</td>
+    </tr>`;
+  }).join('');
+}
