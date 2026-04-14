@@ -135,7 +135,7 @@
         <div class="avatar">K</div>
       </div>
     </header>
-    
+
         <!-- VIEWS -->
         <div class="view-container">
 
@@ -179,4 +179,55 @@
                   <div class="kpi-sub"><span class="dot-red"></span> Needs attention</div>
                 </div>
               </div>
-      
+              <div class="dash-grid">
+          <!-- CPU/Mem chart -->
+          <div class="card span2">
+            <div class="card-header">
+              <span class="card-title">Resource Utilization (Live)</span>
+              <div class="chart-legend">
+                <span class="leg-item"><span class="leg-dot" style="background:#00d4ff"></span>CPU</span>
+                <span class="leg-item"><span class="leg-dot" style="background:#a78bfa"></span>Memory</span>
+              </div>
+            </div>
+            <canvas id="resource-chart" height="120"></canvas>
+          </div>
+
+          <!-- Node health -->
+          <div class="card">
+            <div class="card-header"><span class="card-title">Node Health</span></div>
+            <div class="node-mini-grid" id="node-mini"></div>
+          </div>
+
+          <!-- Recent events -->
+          <div class="card span2">
+            <div class="card-header">
+              <span class="card-title">Recent Events</span>
+              <button class="card-link" onclick="showView('events')">View all →</button>
+            </div>
+            <div id="dash-events"></div>
+          </div>
+
+          <!-- Pod status ring -->
+          <div class="card">
+            <div class="card-header"><span class="card-title">Pod Status</span></div>
+            <div class="ring-wrap">
+              <canvas id="pod-ring" width="130" height="130"></canvas>
+              <div class="ring-center" id="ring-center">8<br><small>pods</small></div>
+            </div>
+            <div class="ring-legend" id="ring-legend"></div>
+          </div>
+
+          <!-- Quick actions -->
+          <div class="card">
+            <div class="card-header"><span class="card-title">Quick Actions</span></div>
+            <div class="quick-actions">
+              <button class="qa-btn" onclick="showView('deploy-wizard')">🚀 New Deployment</button>
+              <button class="qa-btn" onclick="showView('terminal')">⚡ Open Terminal</button>
+              <button class="qa-btn" onclick="showView('secrets')">🔐 Manage Secrets</button>
+              <button class="qa-btn" onclick="showView('volumes')">💾 PVC Manager</button>
+              <button class="qa-btn" onclick="scaleAll()">⬆ Scale Replicas</button>
+              <button class="qa-btn" onclick="rolloutRestart()">🔄 Rollout Restart</button>
+            </div>
+          </div>
+        </div>
+      </div>
