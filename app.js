@@ -232,3 +232,416 @@ function renderServices() {
     </tr>`;
   }).join('');
 }
+// ---- STATEFULSETS ----
+function renderStatefulSets() {
+  const tbody = document.getElementById('sts-tbody');
+  if (!tbody) return;
+  tbody.innerHTML = statefulsets.map(s => `<tr>
+    <td class="mono">${s.name}</td>
+    <td class="mono">${s.replicas}</td>
+    <td style="color:${s.ready===s.replicas?'var(--green)':'var(--amber)'}" class="mono">${s.ready}/${s.replicas}</td>
+    <td class="muted">${s.storageClass}</td>
+    <td class="mono muted">${s.pvcTemplate}</td>
+    <td class="muted">${s.age}</td>
+  </tr>`).join('');
+}
+
+// ---- JOBS ----
+function renderJobs() {
+  const tbody = document.getElementById('jobs-tbody');
+  if (!tbody) return;
+  tbody.innerHTML = jobs.map(j => {
+    const cls = j.status === 'Complete' ? 'completed' : 'failed';
+    return `<tr>
+      <td class="mono">${j.name}</td>
+      <td><span class="badge ${cls}">${j.status}</span></td>
+      <td class="mono muted">${j.completions}</td>
+      <td class="mono muted">${j.duration}</td>
+      <td class="muted">${j.age}</td>
+    </tr>`;
+  }).join('');
+}
+
+function renderCronJobs() {
+  const tbody = document.getElementById('cronjobs-tbody');
+  if (!tbody) return;
+  tbody.innerHTML = cronjobs.map((c, i) => {
+    const cls = c.lastStatus === 'Complete' ? 'completed' : 'failed';
+    return `<tr>
+      <td class="mono">${c.name}</td>
+      <td class="mono" style="color:var(--purple)">${c.schedule}</td>
+      <td class="muted">${c.lastRun}</td>
+      <td><span class="badge ${cls}">${c.lastStatus}</span></td>
+      <td class="mono">${c.active}</td>
+      <td><button class="tiny-btn" onclick="triggerCronJob(${i})">▶ Run Now</button></td>
+    </tr>`;
+  }).join('');
+}
+
+// ---- EVENTS ----
+function renderEvents(typeFilter) {
+  const tbody = document.getElementById('events-tbody');
+  if (!tbody) return;
+  const filtered = typeFilter && typeFilter !== 'all' ? events.filter(e => e.type === typeFilter) : events;
+  tbody.innerHTML = filtered.map(e => `<tr>
+    <td class="muted mono" style="white-space:nowrap">${e.time}</td>
+    <td><span class="badge ${e.type==='Warning'?'warn-type':'completed'}">${e.type}</span></td>
+    <td class="mono muted" style="white-space:nowrap;font-size:10px">${e.obj}</td>
+    <td style="color:var(--blue);font-size:11px">${e.reason}</td>
+    <td class="mono muted">${e.count}</td>
+    <td style="font-size:11px;color:var(--text2)">${e.msg}</td>
+  </tr>`).join('');
+}
+
+function filterEvents(val) { renderEvents(val); }
+
+// ---- NODE CARDS ----
+const nodeData = [
+  { name:'node-1', role:'worker', status:'Ready', cpu:58, mem:71, pods:3, capacity:'4 vCPU · 8 GiB', version:'1.28.4', zone:'us-central1-a' },
+  { name:'node-2', role:'worker', status:'Ready', cpu:35, mem:44, pods:2, capacity:'4 vCPU · 8 GiB', version:'1.28.4', zone:'us-central1-b' },
+  { name:'node-3', role:'worker', status:'Ready', cpu:42, mem:69, pods:2, capacity:'4 vCPU · 16 GiB', version:'1.28.3', zone:'us-central1-c' },
+];
+
+function renderNodeCards() {
+  const el = document.getElementById('node-cards');
+  if (!el) return;
+  el.innerHTML = nodeData.map(n => {
+    const cpuCls = n.cpu > 80 ? '#f87171' : n.cpu > 60 ? '#fbbf24' : '#00d4ff';
+    const memCls = n.mem > 80 ? '#f87171' : n.mem > 60 ? '#fbbf24' : '#a78bfa';
+    return `<div class="node-card-big">
+      <div class="nc-header">
+        <div>
+          <div class="nc-name">${n.name}</div>
+          <div class="nc-role">${n.role} · ${n.zone}</div>
+        </div>
+        <span class="badge success">Ready</span>
+      </div>
+      <div class="nc-resource">
+        <div class="nc-res-label"><span>CPU</span><span>${n.cpu}%</span></div>
+        <div class="nc-bar"><div class="nc-bar-fill" style="width:${n.cpu}%;background:${cpuCls}"></div></div>
+      </div>
+      <div class="nc-resource" style="margin-top:8px">
+        <div class="nc-res-label"><span>Memory</span><span>${n.mem}%</span></div>
+        <div class="nc-bar"><div class="nc-bar-fill" style="width:${n.mem}%;background:${memCls}"></div></div>
+      </div>
+      <div class="nc-meta">
+        <div class="nc-meta-item"><div class="nc-meta-label">Capacity</div><div class="nc-meta-val" style="font-size:10px">${n.capacity}</div></div>
+        <div class="nc-meta-item"><div class="nc-meta-label">Pods</div><div class="nc-meta-val">${n.pods} running</div></div>
+        <div class="nc-meta-item"><div class="nc-meta-label">k8s Version</div><div class="nc-meta-val">${n.version}</div></div>
+        <div class="nc-meta-item"><div class="nc-meta-label">Runtime</div><div class="nc-meta-val">containerd</div></div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderNodeMini() {
+  const el = document.getElementById('node-mini');
+  if (!el) return;
+  el.innerHTML = nodeData.map(n => {
+    const cpuCls = n.cpu > 80 ? 'var(--red)' : n.cpu > 60 ? 'var(--amber)' : 'var(--cyan)';
+    const memCls = n.mem > 80 ? 'var(--red)' : n.mem > 60 ? 'var(--amber)' : 'var(--purple)';
+    return `<div class="node-mini-item">
+      <div class="node-mini-header">
+        <span class="node-mini-name">${n.name}</span>
+        <span class="muted" style="font-size:10px">${n.pods} pods</span>
+      </div>
+      <div class="bar-wrap"><div class="bar-inner" style="width:${n.cpu}%;background:${cpuCls}"></div></div>
+      <div class="bar-wrap" style="margin-top:3px"><div class="bar-inner" style="width:${n.mem}%;background:${memCls}"></div></div>
+    </div>`;
+  }).join('');
+}
+
+function renderDashEvents() {
+  const el = document.getElementById('dash-events');
+  if (!el) return;
+  const recent = events.slice(0, 6);
+  el.innerHTML = recent.map(e => `
+    <div class="dash-event">
+      <div class="de-type"><span class="badge ${e.type==='Warning'?'warn-type':'completed'}" style="font-size:9px">${e.type}</span></div>
+      <div>
+        <div class="de-obj">${e.obj}</div>
+        <div class="de-msg">${e.msg}</div>
+      </div>
+      <div class="de-time">${e.time}</div>
+    </div>
+  `).join('');
+}
+
+// ---- CHART ----
+function initChart() {
+  const canvas = document.getElementById('resource-chart');
+  if (!canvas) return;
+  for (let i = 0; i < MAX_HISTORY; i++) {
+    resourceHistory.cpu.push(Math.round(35 + Math.random() * 25));
+    resourceHistory.mem.push(Math.round(45 + Math.random() * 20));
+  }
+  drawChart();
+}
+
+function drawChart() {
+  const canvas = document.getElementById('resource-chart');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const dpr = window.devicePixelRatio || 1;
+  const rect = canvas.parentElement.getBoundingClientRect();
+  const W = rect.width - 32;
+  const H = 120;
+  canvas.width = W * dpr;
+  canvas.height = H * dpr;
+  canvas.style.width = W + 'px';
+  canvas.style.height = H + 'px';
+  ctx.scale(dpr, dpr);
+  ctx.clearRect(0, 0, W, H);
+
+  // Grid lines
+  ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+  ctx.lineWidth = 1;
+  for (let i = 0; i <= 4; i++) {
+    const y = (H - 20) * (i / 4) + 10;
+    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
+  }
+
+  function drawLine(data, color) {
+    const step = W / (MAX_HISTORY - 1);
+    ctx.beginPath();
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 2;
+    ctx.lineJoin = 'round';
+    data.forEach((v, i) => {
+      const x = i * step;
+      const y = H - 10 - ((v / 100) * (H - 20));
+      i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+    });
+    ctx.stroke();
+
+    // Fill
+    ctx.globalAlpha = 0.08;
+    ctx.fillStyle = color;
+    ctx.lineTo(W, H); ctx.lineTo(0, H); ctx.closePath(); ctx.fill();
+    ctx.globalAlpha = 1;
+  }
+
+  drawLine(resourceHistory.cpu, '#00d4ff');
+  drawLine(resourceHistory.mem, '#a78bfa');
+
+  // Current values
+  ctx.fillStyle = 'rgba(0,212,255,0.9)';
+  ctx.font = '10px JetBrains Mono, monospace';
+  const lastCPU = resourceHistory.cpu[resourceHistory.cpu.length - 1];
+  const lastMem = resourceHistory.mem[resourceHistory.mem.length - 1];
+  ctx.fillText(`CPU ${lastCPU}%`, W - 90, 18);
+  ctx.fillStyle = 'rgba(167,139,250,0.9)';
+  ctx.fillText(`MEM ${lastMem}%`, W - 44, 18);
+}
+
+// ---- RING CHART ----
+function initRing() {
+  const canvas = document.getElementById('pod-ring');
+  if (!canvas) return;
+  const running = pods.filter(p => p.status === 'Running').length;
+  const pending = pods.filter(p => p.status === 'Pending').length;
+  const failed = pods.filter(p => p.status === 'Failed').length;
+  const total = pods.length;
+
+  document.getElementById('ring-center').innerHTML = `${total}<br><small>pods</small>`;
+
+  const data = [
+    { label: 'Running', count: running, color: '#34d399' },
+    { label: 'Pending', count: pending, color: '#fbbf24' },
+    { label: 'Failed',  count: failed,  color: '#f87171' },
+  ];
+
+  const ctx = canvas.getContext('2d');
+  const dpr = window.devicePixelRatio || 1;
+  canvas.width = 130 * dpr; canvas.height = 130 * dpr;
+  canvas.style.width = '130px'; canvas.style.height = '130px';
+  ctx.scale(dpr, dpr);
+
+  let startAngle = -Math.PI / 2;
+  const cx = 65, cy = 65, r = 52, rw = 10;
+  ctx.clearRect(0, 0, 130, 130);
+  ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+  ctx.lineWidth = rw;
+  ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.stroke();
+
+  data.forEach(d => {
+    if (d.count === 0) return;
+    const angle = (d.count / total) * Math.PI * 2;
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, startAngle, startAngle + angle);
+    ctx.strokeStyle = d.color;
+    ctx.lineWidth = rw;
+    ctx.stroke();
+    startAngle += angle;
+  });
+
+  const legend = document.getElementById('ring-legend');
+  legend.innerHTML = data.map(d => `
+    <div class="rl-item">
+      <div class="rl-dot" style="background:${d.color}"></div>
+      <span>${d.label}</span>
+      <span class="rl-count">${d.count}</span>
+    </div>
+  `).join('');
+}
+
+// ---- NAVIGATION ----
+const breadcrumbs = {
+  dashboard: 'Dashboard',
+  pods: 'Workloads / Pods',
+  deployments: 'Workloads / Deployments',
+  statefulsets: 'Workloads / StatefulSets',
+  jobs: 'Workloads / Jobs & CronJobs',
+  services: 'Network / Services',
+  ingress: 'Network / Ingress',
+  volumes: 'Storage / Volumes & PVCs',
+  secrets: 'Config / Secrets & ConfigMaps',
+  nodes: 'Cluster / Nodes',
+  rbac: 'Cluster / RBAC',
+  events: 'Cluster / Events',
+  terminal: 'Terminal',
+  'deploy-wizard': 'Deploy Workload',
+};
+
+function showView(name) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+  const view = document.getElementById('view-' + name);
+  if (view) view.classList.add('active');
+  const nav = document.querySelector(`[data-view="${name}"]`);
+  if (nav) nav.classList.add('active');
+  document.getElementById('breadcrumb').textContent = breadcrumbs[name] || name;
+  if (name === 'dashboard') { drawChart(); initRing(); renderNodeMini(); renderDashEvents(); }
+  if (name === 'nodes') { renderNodeCards(); }
+  if (name === 'deploy-wizard') { updateYamlPreview(); }
+}
+
+// ---- ACTIONS ----
+function scaleDep(i, delta) {
+  deployments[i].replicas = Math.max(0, Math.min(20, deployments[i].replicas + delta));
+  const el = document.getElementById('sc-' + i);
+  if (el) el.textContent = deployments[i].replicas;
+  toast(`⬆ Scaled ${deployments[i].name} → ${deployments[i].replicas} replica(s)`);
+}
+
+function rollout(i) {
+  toast(`🔄 Rollout restart triggered for ${deployments[i].name}`);
+  addEvent('Normal', `Deployment/${deployments[i].name}`, 'RolloutRestart', 'Rollout restart initiated by user');
+}
+
+function deleteDep(i) {
+  const name = deployments[i].name;
+  deployments.splice(i, 1);
+  renderDeployments();
+  updateKPIs();
+  toast(`🗑 Deployment "${name}" deleted`);
+}
+
+function deletePod(i) {
+  const p = pods[i];
+  pods[i] = { ...p, status: 'Terminating' };
+  renderPods();
+  toast(`⏹ Terminating pod ${p.name}`);
+  setTimeout(() => {
+    pods.splice(pods.findIndex(x => x.name === p.name), 1);
+    renderPods();
+    updateKPIs();
+    initRing();
+    toast(`✓ Pod deleted`);
+  }, 1800);
+}
+
+function scaleAll() {
+  deployments.forEach((d, i) => {
+    if (d.replicas < 3) { d.replicas++; }
+    const el = document.getElementById('sc-' + i);
+    if (el) el.textContent = d.replicas;
+  });
+  toast('⬆ All deployments scaled up by 1');
+}
+
+function rolloutRestart() {
+  toast('🔄 Rollout restart triggered for all deployments');
+  deployments.forEach(d => addEvent('Normal', `Deployment/${d.name}`, 'RolloutRestart', 'Rollout restart initiated'));
+}
+
+function triggerCronJob(i) {
+  toast(`▶ CronJob ${cronjobs[i].name} triggered manually`);
+  cronjobs[i].lastRun = 'just now';
+  cronjobs[i].active = 1;
+  renderCronJobs();
+  setTimeout(() => {
+    cronjobs[i].lastStatus = 'Complete';
+    cronjobs[i].active = 0;
+    renderCronJobs();
+    toast(`✓ CronJob ${cronjobs[i].name} completed`);
+  }, 3000);
+}
+
+async function applyDeploy() {
+  const name     = document.getElementById('w-name').value.trim() || 'my-service';
+  const image    = document.getElementById('w-image').value.trim() || 'nginx:latest';
+  const replicas = parseInt(document.getElementById('w-replicas').value) || 1;
+  const cpuReq   = document.getElementById('w-cpu-req').value.trim() || '100m';
+  const memLim   = document.getElementById('w-mem-lim').value.trim() || '512Mi';
+  const strategy = document.getElementById('w-strategy').value;
+  const yaml     = document.getElementById('yaml-preview')?.textContent || '';
+
+  const btn = document.querySelector('.wizard-form .hdr-btn.accent');
+  if (btn) { btn.textContent = '⏳ Applying…'; btn.disabled = true; }
+
+  if (serverOnline && yaml) {
+    // ── REAL: POST YAML to cluster via server.js ──────────────
+    try {
+      toast('🚀 Applying YAML to cluster…');
+      const r = await fetch(`${API_BASE}/api/apply`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ yaml }),
+      });
+      const result = await r.json();
+
+      // Show result in a mini output box inside the wizard
+      let outEl = document.getElementById('apply-output');
+      if (!outEl) {
+        outEl = document.createElement('pre');
+        outEl.id = 'apply-output';
+        outEl.style.cssText = 'background:var(--bg);border:1px solid var(--border2);border-radius:8px;padding:12px;font-family:var(--font-mono);font-size:11px;line-height:1.7;max-height:200px;overflow:auto;margin:0 16px 16px;color:var(--green);white-space:pre-wrap';
+        document.querySelector('.wizard-form').appendChild(outEl);
+      }
+      if (result.success) {
+        outEl.style.color = 'var(--green)';
+        outEl.textContent = '✓ ' + result.output;
+        toast(`✓ "${name}" applied to cluster`);
+        // Reload real data after a short delay
+        setTimeout(loadRealData, 3000);
+      } else {
+        outEl.style.color = 'var(--red)';
+        outEl.textContent = '✗ ' + result.output;
+        toast(`✗ Apply failed — see output`);
+      }
+    } catch (e) {
+      toast(`✗ Server error: ${e.message}`);
+    }
+  } else {
+    // ── SIMULATED fallback ────────────────────────────────────
+    deployments.push({ name, image, replicas, available: 0, strategy, cpuReq, memLim, age: '0s' });
+    for (let i = 0; i < replicas; i++) {
+      pods.push({ name: `${name}-${randStr(5)}-${randStr(5)}`, ns: 'default', status: 'Pending', restarts: 0, cpu: 0, mem: 0, node: '<none>', age: '0s', image, ready: '0/1' });
+    }
+    addEvent('Normal', `Deployment/${name}`, 'ScalingReplicaSet', `Scaled up to ${replicas} replica(s)`);
+    renderAll(); updateKPIs();
+    toast(`🚀 [sim] Deployment "${name}" applied — pods scheduling…`);
+    setTimeout(() => {
+      deployments[deployments.length - 1].available = replicas;
+      pods.filter(p => p.status === 'Pending' && p.name.startsWith(name)).forEach(p => {
+        p.status = 'Running'; p.cpu = Math.floor(10 + Math.random() * 30);
+        p.mem = Math.floor(20 + Math.random() * 40); p.node = `node-${Math.ceil(Math.random() * 3)}`; p.age = '5s'; p.ready = '1/1';
+      });
+      renderAll(); initRing(); toast(`✓ [sim] "${name}" pods are Running`);
+    }, 2800);
+  }
+
+  showView('deployments');
+  if (btn) { btn.textContent = '🚀 Apply to Cluster'; btn.disabled = false; }
+}
