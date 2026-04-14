@@ -645,3 +645,210 @@ async function applyDeploy() {
   showView('deployments');
   if (btn) { btn.textContent = '🚀 Apply to Cluster'; btn.disabled = false; }
 }
+// ---- YAML PREVIEW ----
+function updateYamlPreview() {
+  const name    = document.getElementById('w-name')?.value || 'my-service';
+  const image   = document.getElementById('w-image')?.value || 'nginx:1.25-alpine';
+  const replicas= document.getElementById('w-replicas')?.value || '2';
+  const port    = document.getElementById('w-port')?.value || '80';
+  const cpuReq  = document.getElementById('w-cpu-req')?.value || '100m';
+  const cpuLim  = document.getElementById('w-cpu-lim')?.value || '500m';
+  const memReq  = document.getElementById('w-mem-req')?.value || '128Mi';
+  const memLim  = document.getElementById('w-mem-lim')?.value || '512Mi';
+  const ns      = document.getElementById('w-ns')?.value || 'default';
+  const strategy= document.getElementById('w-strategy')?.value || 'RollingUpdate';
+  const health  = document.getElementById('w-health')?.value || '/healthz';
+  const envsRaw = document.getElementById('w-envs')?.value || '';
+  const envLines = envsRaw.split('\n').filter(l => l.includes('=')).map(l => {
+    const [k, ...v] = l.split('=');
+    return `        - name: ${k.trim()}\n          value: "${v.join('=').trim()}"`;
+  }).join('\n');
+
+  const yaml = `apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ${name}
+  namespace: ${ns}
+  labels:
+    app: ${name}
+spec:
+  replicas: ${replicas}
+  selector:
+    matchLabels:
+      app: ${name}
+  strategy:
+    type: ${strategy}
+  template:
+    metadata:
+      labels:
+        app: ${name}
+    spec:
+      containers:
+      - name: ${name}
+        image: ${image}
+        ports:
+        - containerPort: ${port}
+        resources:
+          requests:
+            cpu: ${cpuReq}
+            memory: ${memReq}
+          limits:
+            cpu: ${cpuLim}
+            memory: ${memLim}
+        livenessProbe:
+          httpGet:
+            path: ${health}
+            port: ${port}
+          initialDelaySeconds: 10
+          periodSeconds: 30
+        readinessProbe:
+          httpGet:
+            path: ${health}
+            port: ${port}
+          initialDelaySeconds: 5
+          periodSeconds: 10${envLines ? `\n        env:\n${envLines}` : ''}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ${name}
+  namespace: ${ns}
+spec:
+  selector:
+    app: ${name}
+  ports:
+  - port: ${port}
+    targetPort: ${port}
+  type: ClusterIP`;
+
+  const pre = document.getElementById('yaml-preview');
+  if (pre) pre.textContent = yaml;
+}
+
+function copyYaml() {
+  const pre = document.getElementById('yaml-preview');
+  if (!pre) return;
+  navigator.clipboard.writeText(pre.textContent).then(() => toast('📋 YAML copied to clipboard'));
+}
+
+// ---- TERMINAL (REAL + SIMULATED) ----
+// When server is online: POSTs to /api/terminal which runs kubectl
+// When offline: uses local simulation
+
+let termHistory = [];
+let termHistIdx = -1;
+
+function initTerminal() {
+  const out = document.getElementById('terminal-output');
+  if (!out) return;
+  const mode = serverOnline ? '⬤ LIVE — running real kubectl commands' : '⬤ SIMULATED — run node server.js to connect';
+  const color = serverOnline ? 'var(--green)' : 'var(--amber)';
+  out.innerHTML =
+    `<span style="color:${color}">${mode}</span>\n` +
+    `<span class="t-hdr">Type "help" for available commands. Tab to autocomplete.</span>\n\n`;
+}
+
+const AUTOCOMPLETE = [
+  'kubectl get pods', 'kubectl get deployments', 'kubectl get services',
+  'kubectl get nodes', 'kubectl get namespaces', 'kubectl get pvc',
+  'kubectl get events', 'kubectl get ingress', 'kubectl get configmaps',
+  'kubectl get secrets', 'kubectl top pods', 'kubectl top nodes',
+  'kubectl cluster-info', 'kubectl version', 'kubectl api-resources',
+  'kubectl describe pod ', 'kubectl describe deployment ',
+  'kubectl logs ', 'kubectl rollout status deployment/',
+  'kubectl rollout restart deployment/', 'help', 'clear',
+];
+
+async function handleTermInput(e) {
+  const input = document.getElementById('term-input');
+
+  // Tab autocomplete
+  if (e.key === 'Tab') {
+    e.preventDefault();
+    const val = input.value;
+    const match = AUTOCOMPLETE.find(c => c.startsWith(val) && c !== val);
+    if (match) input.value = match;
+    return;
+  }
+
+  // History navigation
+  if (e.key === 'ArrowUp') {
+    e.preventDefault();
+    if (termHistIdx < termHistory.length - 1) { termHistIdx++; input.value = termHistory[termHistIdx]; }
+    return;
+  }
+  if (e.key === 'ArrowDown') {
+    e.preventDefault();
+    if (termHistIdx > 0) { termHistIdx--; input.value = termHistory[termHistIdx]; }
+    else { termHistIdx = -1; input.value = ''; }
+    return;
+  }
+
+  if (e.key !== 'Enter') return;
+
+  const cmd = input.value.trim();
+  input.value = '';
+  if (!cmd) return;
+
+  termHistory.unshift(cmd);
+  termHistIdx = -1;
+
+  const out = document.getElementById('terminal-output');
+  out.innerHTML += `<span class="t-cmd">$ ${escHtml(cmd)}</span>\n`;
+
+  if (cmd === 'clear') { out.innerHTML = ''; return; }
+  if (cmd === 'help')  { out.innerHTML += renderHelp(); out.scrollTop = out.scrollHeight; return; }
+
+  if (serverOnline) {
+    // ── REAL: send to server.js ──────────────────────────────
+    const args = parseCmd(cmd);
+    if (!args.length) return;
+
+    out.innerHTML += `<span class="t-hdr">…</span>`;
+    out.scrollTop = out.scrollHeight;
+
+    try {
+      const r = await fetch(`${API_BASE}/api/terminal`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ args }),
+      });
+      const data = await r.json();
+
+      // Remove the "…" placeholder
+      out.innerHTML = out.innerHTML.replace('<span class="t-hdr">…</span>', '');
+
+      if (data.stdout) {
+        const lines = data.stdout.split('\n');
+        lines.forEach((line, i) => {
+          if (line === '') { out.innerHTML += '\n'; return; }
+          // First line is often a header
+          const cls = i === 0 ? 't-hdr' : isErrorLine(line) ? 't-err' : isWarnLine(line) ? 't-warn' : 't-out';
+          out.innerHTML += `<span class="${cls}">${escHtml(line)}</span>\n`;
+        });
+      }
+      if (data.stderr) {
+        data.stderr.split('\n').filter(Boolean).forEach(line => {
+          out.innerHTML += `<span class="t-err">${escHtml(line)}</span>\n`;
+        });
+      }
+    } catch (err) {
+      out.innerHTML = out.innerHTML.replace('<span class="t-hdr">…</span>', '');
+      out.innerHTML += `<span class="t-err">Connection error: ${escHtml(err.message)}</span>\n`;
+    }
+  } else {
+        // ── SIMULATED fallback ───────────────────────────────────
+    const handler = simCommands[cmd] || simCommands[cmd.split(' ').slice(0,3).join(' ')];
+    if (handler) {
+      out.innerHTML += handler();
+    } else if (cmd.startsWith('kubectl logs')) {
+      out.innerHTML += generateLogs(cmd.split(' ')[2] || 'pod');
+    } else if (cmd.startsWith('kubectl describe')) {
+      out.innerHTML += simDescribe(cmd);
+    } else {
+      out.innerHTML += `<span class="t-err">command not found: ${escHtml(cmd)}</span>\n<span class="t-hdr">Type "help" for commands, or run node server.js to connect to a real cluster.</span>\n`;
+    }
+  }
+
+  out.scrollTop = out.scrollHeight;
+}
