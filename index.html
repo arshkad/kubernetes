@@ -10,3 +10,93 @@
 </head>
 <body>
 <div id="app">
+    
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-logo">
+        <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+          <polygon points="14,2 25,8 25,20 14,26 3,20 3,8" stroke="#00d4ff" stroke-width="1.5" fill="none" opacity="0.8"/>
+          <polygon points="14,7 21,11 21,17 14,21 7,17 7,11" fill="#00d4ff" opacity="0.2"/>
+          <circle cx="14" cy="14" r="3" fill="#00d4ff"/>
+        </svg>
+      </div>
+      <div>
+        <div class="brand-name">KubeOps</div>
+        <div class="brand-ver">Pro v2.8.4</div>
+      </div>
+    </div>
+    <div class="cluster-info">
+        <div class="cluster-pill">
+          <span class="pulse-dot"></span>
+          <span class="mono">prod-cluster-1</span>
+        </div>
+        <div class="cluster-meta">GKE · us-central1-a · k8s 1.28</div>
+      </div>
+  
+      <nav class="nav">
+        <div class="nav-group-label">Overview</div>
+        <a class="nav-item active" onclick="showView('dashboard')" data-view="dashboard">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><rect x="1" y="1" width="6" height="6" rx="1.5"/><rect x="9" y="1" width="6" height="6" rx="1.5"/><rect x="1" y="9" width="6" height="6" rx="1.5"/><rect x="9" y="9" width="6" height="6" rx="1.5"/></svg>
+          Dashboard
+        </a>
+        <div class="nav-group-label">Workloads</div>
+        <a class="nav-item" onclick="showView('pods')" data-view="pods">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><polygon points="8,1 14,4.5 14,11.5 8,15 2,11.5 2,4.5"/></svg>
+          Pods
+          <span class="nav-badge" id="nb-pods">8</span>
+        </a>
+        <a class="nav-item" onclick="showView('deployments')" data-view="deployments">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="12" height="4" rx="1"/><rect x="2" y="10" width="12" height="4" rx="1"/><line x1="8" y1="6" x2="8" y2="10"/></svg>
+          Deployments
+          <span class="nav-badge" id="nb-deps">4</span>
+        </a>
+        <a class="nav-item" onclick="showView('statefulsets')" data-view="statefulsets">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="5" height="12" rx="1"/><rect x="9" y="2" width="5" height="12" rx="1"/></svg>
+          StatefulSets
+          <span class="nav-badge" id="nb-sts">2</span>
+        </a>
+        <a class="nav-item" onclick="showView('jobs')" data-view="jobs">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6"/><polyline points="8,5 8,8 10,10"/></svg>
+          Jobs & CronJobs
+          <span class="nav-badge warn" id="nb-jobs">3</span>
+        </a>
+        <div class="nav-group-label">Network</div>
+        <a class="nav-item" onclick="showView('services')" data-view="services">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="3" cy="8" r="2"/><circle cx="13" cy="4" r="2"/><circle cx="13" cy="12" r="2"/><line x1="5" y1="8" x2="11" y2="5"/><line x1="5" y1="8" x2="11" y2="11"/></svg>
+          Services
+          <span class="nav-badge" id="nb-svcs">5</span>
+        </a>
+        <a class="nav-item" onclick="showView('ingress')" data-view="ingress">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="4" width="14" height="8" rx="1.5"/><line x1="5" y1="4" x2="5" y2="12"/><line x1="11" y1="4" x2="11" y2="12"/></svg>
+          Ingress
+        </a>
+        <div class="nav-group-label">Storage & Config</div>
+        <a class="nav-item" onclick="showView('volumes')" data-view="volumes">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><ellipse cx="8" cy="5" rx="6" ry="2.5"/><path d="M2 5v6c0 1.38 2.69 2.5 6 2.5s6-1.12 6-2.5V5"/></svg>
+          Volumes & PVCs
+        </a>
+        <a class="nav-item" onclick="showView('secrets')" data-view="secrets">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="4" y="7" width="8" height="7" rx="1"/><path d="M5.5 7V5a2.5 2.5 0 0 1 5 0v2"/></svg>
+          Secrets & ConfigMaps
+        </a>
+        <div class="nav-group-label">Cluster</div>
+        <a class="nav-item" onclick="showView('nodes')" data-view="nodes">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="1" width="6" height="14" rx="1"/><rect x="9" y="1" width="6" height="14" rx="1"/></svg>
+          Nodes
+          <span class="nav-badge" id="nb-nodes">3</span>
+        </a>
+        <a class="nav-item" onclick="showView('rbac')" data-view="rbac">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="5" r="3"/><path d="M2 14c0-3.31 2.69-6 6-6s6 2.69 6 6"/></svg>
+          RBAC
+        </a>
+        <a class="nav-item" onclick="showView('events')" data-view="events">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 2l1.5 4.5H14l-3.75 2.75 1.5 4.5L8 11 4.25 13.75l1.5-4.5L2 6.5h4.5z"/></svg>
+          Events
+          <span class="nav-badge warn" id="nb-events">4</span>
+        </a>
+        <a class="nav-item" onclick="showView('terminal')" data-view="terminal">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="2" width="14" height="12" rx="1.5"/><polyline points="4,6 7,9 4,12"/><line x1="8" y1="12" x2="12" y2="12"/></svg>
+          Terminal
+        </a>
+      </nav>
