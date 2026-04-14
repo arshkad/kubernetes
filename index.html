@@ -135,3 +135,48 @@
         <div class="avatar">K</div>
       </div>
     </header>
+    
+        <!-- VIEWS -->
+        <div class="view-container">
+
+            <!-- DASHBOARD -->
+            <div class="view active" id="view-dashboard">
+              <div class="kpi-row">
+                <div class="kpi-card" onclick="showView('pods')">
+                  <div class="kpi-icon pods-icon">⬡</div>
+                  <div class="kpi-val" id="kpi-pods">8</div>
+                  <div class="kpi-label">Total Pods</div>
+                  <div class="kpi-sub"><span class="dot-green"></span> 6 running · 1 pending · 1 failed</div>
+                </div>
+                <div class="kpi-card" onclick="showView('nodes')">
+                  <div class="kpi-icon nodes-icon">□</div>
+                  <div class="kpi-val">3</div>
+                  <div class="kpi-label">Nodes</div>
+                  <div class="kpi-sub"><span class="dot-green"></span> All healthy · 12 vCPU total</div>
+                </div>
+                <div class="kpi-card" onclick="showView('deployments')">
+                  <div class="kpi-icon deps-icon">⊞</div>
+                  <div class="kpi-val" id="kpi-deps">4</div>
+                  <div class="kpi-label">Deployments</div>
+                  <div class="kpi-sub"><span class="dot-amber"></span> 1 degraded</div>
+                </div>
+                <div class="kpi-card" onclick="showView('services')">
+                  <div class="kpi-icon svcs-icon">◈</div>
+                  <div class="kpi-val">5</div>
+                  <div class="kpi-label">Services</div>
+                  <div class="kpi-sub"><span class="dot-green"></span> 1 LoadBalancer exposed</div>
+                </div>
+                <div class="kpi-card">
+                  <div class="kpi-icon vol-icon">⬤</div>
+                  <div class="kpi-val">4</div>
+                  <div class="kpi-label">PVCs</div>
+                  <div class="kpi-sub"><span class="dot-green"></span> 186 GiB bound</div>
+                </div>
+                <div class="kpi-card" onclick="showView('events')">
+                  <div class="kpi-icon warn-icon">⚠</div>
+                  <div class="kpi-val warn-val">4</div>
+                  <div class="kpi-label">Warnings</div>
+                  <div class="kpi-sub"><span class="dot-red"></span> Needs attention</div>
+                </div>
+              </div>
+      
