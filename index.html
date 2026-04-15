@@ -362,3 +362,125 @@
           </table>
         </div>
       </div>
+      <!-- SECRETS & CONFIGMAPS -->
+      <div class="view" id="view-secrets">
+        <div class="tabs-row">
+          <button class="tab active" onclick="switchTab(this,'secrets-panel')">Secrets</button>
+          <button class="tab" onclick="switchTab(this,'configs-panel')">ConfigMaps</button>
+        </div>
+        <div id="secrets-panel" class="tab-panel active card">
+          <table class="data-table">
+            <thead><tr><th>Name</th><th>Type</th><th>Keys</th><th>Age</th><th>Actions</th></tr></thead>
+            <tbody>
+              <tr><td class="mono">postgres-secret</td><td>Opaque</td><td>3 (password, user, db)</td><td class="muted">15d</td><td><button class="tiny-btn">View</button></td></tr>
+              <tr><td class="mono">tls-secret</td><td>kubernetes.io/tls</td><td>2 (tls.crt, tls.key)</td><td class="muted">30d</td><td><button class="tiny-btn">View</button></td></tr>
+              <tr><td class="mono">gcr-pull-secret</td><td>kubernetes.io/dockerconfigjson</td><td>1 (.dockerconfigjson)</td><td class="muted">30d</td><td><button class="tiny-btn">View</button></td></tr>
+              <tr><td class="mono">redis-password</td><td>Opaque</td><td>1 (password)</td><td class="muted">12d</td><td><button class="tiny-btn">View</button></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div id="configs-panel" class="tab-panel card" style="display:none">
+          <table class="data-table">
+            <thead><tr><th>Name</th><th>Data Keys</th><th>Age</th><th>Actions</th></tr></thead>
+            <tbody>
+              <tr><td class="mono">app-config</td><td>DATABASE_URL, REDIS_URL, API_KEY, LOG_LEVEL, PORT</td><td class="muted">12d</td><td><button class="tiny-btn">Edit</button></td></tr>
+              <tr><td class="mono">nginx-conf</td><td>nginx.conf, default.conf</td><td class="muted">5d</td><td><button class="tiny-btn">Edit</button></td></tr>
+              <tr><td class="mono">prometheus-cfg</td><td>prometheus.yml, alert.rules, targets.json</td><td class="muted">3d</td><td><button class="tiny-btn">Edit</button></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- NODES -->
+      <div class="view" id="view-nodes">
+        <div class="node-cards" id="node-cards"></div>
+        <div class="card" style="margin-top:12px">
+          <div class="card-header"><span class="card-title">Node Allocation Overview</span></div>
+          <table class="data-table">
+            <thead><tr><th>Node</th><th>Role</th><th>OS</th><th>Kernel</th><th>Runtime</th><th>CPU Alloc</th><th>Mem Alloc</th><th>Pods</th><th>Status</th></tr></thead>
+            <tbody>
+              <tr><td class="mono">node-1</td><td>worker</td><td>Ubuntu 22.04</td><td>5.15.0-91</td><td>containerd 1.7</td><td>58%</td><td>71%</td><td>3</td><td><span class="badge success">Ready</span></td></tr>
+              <tr><td class="mono">node-2</td><td>worker</td><td>Ubuntu 22.04</td><td>5.15.0-91</td><td>containerd 1.7</td><td>35%</td><td>44%</td><td>2</td><td><span class="badge success">Ready</span></td></tr>
+              <tr><td class="mono">node-3</td><td>worker</td><td>Ubuntu 22.04</td><td>5.15.0-88</td><td>containerd 1.7</td><td>42%</td><td>69%</td><td>2</td><td><span class="badge success">Ready</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- RBAC -->
+      <div class="view" id="view-rbac">
+        <div class="tabs-row">
+          <button class="tab active" onclick="switchTab(this,'sa-panel')">Service Accounts</button>
+          <button class="tab" onclick="switchTab(this,'roles-panel')">Roles</button>
+          <button class="tab" onclick="switchTab(this,'rb-panel')">RoleBindings</button>
+        </div>
+        <div id="sa-panel" class="tab-panel active card">
+          <table class="data-table">
+            <thead><tr><th>Name</th><th>Namespace</th><th>Secrets</th><th>Age</th></tr></thead>
+            <tbody>
+              <tr><td class="mono">default</td><td>default</td><td>1</td><td class="muted">30d</td></tr>
+              <tr><td class="mono">api-server-sa</td><td>default</td><td>2</td><td class="muted">3d</td></tr>
+              <tr><td class="mono">prometheus-sa</td><td>monitoring</td><td>1</td><td class="muted">10d</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div id="roles-panel" class="tab-panel card" style="display:none">
+          <table class="data-table">
+            <thead><tr><th>Name</th><th>Namespace</th><th>Rules</th><th>Age</th></tr></thead>
+            <tbody>
+              <tr><td class="mono">pod-reader</td><td>default</td><td>get, list, watch pods</td><td class="muted">3d</td></tr>
+              <tr><td class="mono">deploy-manager</td><td>default</td><td>create, update, delete deployments</td><td class="muted">3d</td></tr>
+              <tr><td class="mono">prom-scraper</td><td>monitoring</td><td>get, list services, pods, endpoints</td><td class="muted">10d</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div id="rb-panel" class="tab-panel card" style="display:none">
+          <table class="data-table">
+            <thead><tr><th>Name</th><th>Role</th><th>Subject</th><th>Age</th></tr></thead>
+            <tbody>
+              <tr><td class="mono">api-pod-reader</td><td>pod-reader</td><td>api-server-sa</td><td class="muted">3d</td></tr>
+              <tr><td class="mono">ci-deploy-mgr</td><td>deploy-manager</td><td>ci-runner-sa</td><td class="muted">5d</td></tr>
+              <tr><td class="mono">prom-binding</td><td>prom-scraper</td><td>prometheus-sa</td><td class="muted">10d</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- EVENTS -->
+      <div class="view" id="view-events">
+        <div class="view-toolbar">
+          <input class="search-box" placeholder="🔍 Filter events..." oninput="filterTable('events-tbody', this.value)">
+          <select class="filter-sel" onchange="filterEvents(this.value)">
+            <option value="all">All Types</option>
+            <option value="Warning">Warnings Only</option>
+            <option value="Normal">Normal Only</option>
+          </select>
+        </div>
+        <div class="card">
+          <table class="data-table">
+            <thead><tr><th>Time</th><th>Type</th><th>Object</th><th>Reason</th><th>Count</th><th>Message</th></tr></thead>
+            <tbody id="events-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- TERMINAL -->
+      <div class="view" id="view-terminal">
+        <div class="card terminal-card">
+          <div class="terminal-header">
+            <div class="term-dots"><span class="td red"></span><span class="td amber"></span><span class="td green"></span></div>
+            <span class="term-title mono">kubectl — prod-cluster-1 / default</span>
+            <select class="term-pod-sel mono" id="term-pod-sel">
+              <option>api-server-6d8bf9-xk2pq</option>
+              <option>frontend-7c9df-jlp2x</option>
+              <option>redis-primary-0</option>
+              <option>postgres-0</option>
+            </select>
+          </div>
+          <div class="terminal-body" id="terminal-output"></div>
+          <div class="terminal-input-row">
+            <span class="term-prompt">$</span>
+            <input class="term-input" id="term-input" placeholder="kubectl get pods" onkeydown="handleTermInput(event)">
+          </div>
+        </div>
+      </div>
