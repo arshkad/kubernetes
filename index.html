@@ -231,3 +231,134 @@
           </div>
         </div>
       </div>
+            <!-- PODS -->
+      <div class="view" id="view-pods">
+        <div class="view-toolbar">
+          <input class="search-box" placeholder="🔍 Filter pods..." oninput="filterTable('pods-tbody', this.value)">
+          <select class="filter-sel" id="pod-status-filter" onchange="renderPods()">
+            <option value="all">All Status</option>
+            <option value="Running">Running</option>
+            <option value="Pending">Pending</option>
+            <option value="Failed">Failed</option>
+          </select>
+          <button class="hdr-btn accent" onclick="showView('deploy-wizard')">+ Deploy</button>
+        </div>
+        <div class="card">
+          <table class="data-table">
+            <thead><tr><th></th><th>Name</th><th>Namespace</th><th>Status</th><th>Restarts</th><th>CPU</th><th>Memory</th><th>Node</th><th>Age</th><th>Actions</th></tr></thead>
+            <tbody id="pods-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- DEPLOYMENTS -->
+      <div class="view" id="view-deployments">
+        <div class="view-toolbar">
+          <input class="search-box" placeholder="🔍 Filter deployments..." oninput="filterTable('deps-tbody', this.value)">
+          <button class="hdr-btn accent" onclick="showView('deploy-wizard')">+ New Deployment</button>
+        </div>
+        <div class="card">
+          <table class="data-table">
+            <thead><tr><th>Name</th><th>Image</th><th>Replicas</th><th>Ready</th><th>Strategy</th><th>CPU Req</th><th>Mem Limit</th><th>Age</th><th>Scale</th><th>Actions</th></tr></thead>
+            <tbody id="deps-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- STATEFULSETS -->
+      <div class="view" id="view-statefulsets">
+        <div class="card">
+          <table class="data-table">
+            <thead><tr><th>Name</th><th>Replicas</th><th>Ready</th><th>Storage Class</th><th>PVC Template</th><th>Age</th></tr></thead>
+            <tbody id="sts-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- JOBS -->
+      <div class="view" id="view-jobs">
+        <div class="tabs-row">
+          <button class="tab active" onclick="switchTab(this,'jobs-panel')">Jobs</button>
+          <button class="tab" onclick="switchTab(this,'cronjobs-panel')">CronJobs</button>
+        </div>
+        <div id="jobs-panel" class="tab-panel active card">
+          <table class="data-table">
+            <thead><tr><th>Name</th><th>Status</th><th>Completions</th><th>Duration</th><th>Age</th></tr></thead>
+            <tbody id="jobs-tbody"></tbody>
+          </table>
+        </div>
+        <div id="cronjobs-panel" class="tab-panel card" style="display:none">
+          <table class="data-table">
+            <thead><tr><th>Name</th><th>Schedule</th><th>Last Run</th><th>Last Status</th><th>Active</th><th>Actions</th></tr></thead>
+            <tbody id="cronjobs-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- SERVICES -->
+      <div class="view" id="view-services">
+        <div class="card">
+          <table class="data-table">
+            <thead><tr><th>Name</th><th>Type</th><th>Cluster IP</th><th>External IP</th><th>Port(s)</th><th>Selector</th><th>Age</th></tr></thead>
+            <tbody id="svcs-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- INGRESS -->
+      <div class="view" id="view-ingress">
+        <div class="card">
+          <table class="data-table">
+            <thead><tr><th>Name</th><th>Class</th><th>Hosts</th><th>Backend</th><th>TLS</th><th>Age</th></tr></thead>
+            <tbody>
+              <tr><td class="mono">main-ingress</td><td>nginx</td><td class="mono teal">app.example.com</td><td>frontend:80, api-server:8080</td><td><span class="badge success">✓ TLS</span></td><td class="muted">5d</td></tr>
+              <tr><td class="mono">admin-ingress</td><td>nginx</td><td class="mono teal">admin.example.com</td><td>admin-panel:3000</td><td><span class="badge success">✓ TLS</span></td><td class="muted">12d</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="card" style="margin-top:12px">
+          <div class="card-header"><span class="card-title">Traffic Flow</span></div>
+          <div class="traffic-diagram">
+            <div class="td-box ext">Internet<br><small>34.122.45.6</small></div>
+            <div class="td-arrow">→</div>
+            <div class="td-box lb">LoadBalancer<br><small>frontend-svc</small></div>
+            <div class="td-arrow">→</div>
+            <div class="td-box ing">Nginx Ingress<br><small>main-ingress</small></div>
+            <div class="td-arrow">→</div>
+            <div class="td-col">
+              <div class="td-box svc">frontend:80</div>
+              <div class="td-box svc" style="margin-top:8px">api-server:8080</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- VOLUMES -->
+      <div class="view" id="view-volumes">
+        <div class="tabs-row">
+          <button class="tab active" onclick="switchTab(this,'pvcs-panel')">PersistentVolumeClaims</button>
+          <button class="tab" onclick="switchTab(this,'pvs-panel')">PersistentVolumes</button>
+        </div>
+        <div id="pvcs-panel" class="tab-panel active card">
+          <table class="data-table">
+            <thead><tr><th>Name</th><th>Status</th><th>Volume</th><th>Capacity</th><th>Access Mode</th><th>Storage Class</th><th>Age</th></tr></thead>
+            <tbody>
+              <tr><td class="mono">postgres-data</td><td><span class="badge success">Bound</span></td><td class="mono muted">pvc-a1b2c3</td><td>100 GiB</td><td>ReadWriteOnce</td><td>standard-ssd</td><td class="muted">15d</td></tr>
+              <tr><td class="mono">redis-data</td><td><span class="badge success">Bound</span></td><td class="mono muted">pvc-d4e5f6</td><td>20 GiB</td><td>ReadWriteOnce</td><td>standard-ssd</td><td class="muted">12d</td></tr>
+              <tr><td class="mono">uploads-data</td><td><span class="badge success">Bound</span></td><td class="mono muted">pvc-g7h8i9</td><td>50 GiB</td><td>ReadWriteMany</td><td>nfs-client</td><td class="muted">8d</td></tr>
+              <tr><td class="mono">logs-archive</td><td><span class="badge success">Bound</span></td><td class="mono muted">pvc-j0k1l2</td><td>16 GiB</td><td>ReadWriteOnce</td><td>standard</td><td class="muted">20d</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div id="pvs-panel" class="tab-panel card" style="display:none">
+          <table class="data-table">
+            <thead><tr><th>Name</th><th>Capacity</th><th>Access Mode</th><th>Reclaim Policy</th><th>Status</th><th>Claim</th></tr></thead>
+            <tbody>
+              <tr><td class="mono">pvc-a1b2c3</td><td>100 GiB</td><td>RWO</td><td>Delete</td><td><span class="badge success">Bound</span></td><td class="mono">default/postgres-data</td></tr>
+              <tr><td class="mono">pvc-d4e5f6</td><td>20 GiB</td><td>RWO</td><td>Delete</td><td><span class="badge success">Bound</span></td><td class="mono">default/redis-data</td></tr>
+              <tr><td class="mono">pvc-g7h8i9</td><td>50 GiB</td><td>RWX</td><td>Retain</td><td><span class="badge success">Bound</span></td><td class="mono">default/uploads-data</td></tr>
+              <tr><td class="mono">pvc-j0k1l2</td><td>16 GiB</td><td>RWO</td><td>Delete</td><td><span class="badge success">Bound</span></td><td class="mono">default/logs-archive</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
