@@ -484,3 +484,73 @@
           </div>
         </div>
       </div>
+<!-- DEPLOY WIZARD -->
+<div class="view" id="view-deploy-wizard">
+    <div class="wizard-grid">
+      <div class="card wizard-form">
+        <div class="card-header"><span class="card-title">⚡ Deploy Workload</span></div>
+        <div class="form-group"><label>App Name</label><input class="form-input" id="w-name" value="my-service" oninput="updateYamlPreview()"></div>
+        <div class="form-group"><label>Container Image</label><input class="form-input" id="w-image" value="nginx:1.25-alpine" oninput="updateYamlPreview()"></div>
+        <div class="form-row2">
+          <div class="form-group"><label>Replicas</label><input class="form-input" id="w-replicas" type="number" value="2" min="1" max="20" oninput="updateYamlPreview()"></div>
+          <div class="form-group"><label>Port</label><input class="form-input" id="w-port" type="number" value="80" oninput="updateYamlPreview()"></div>
+        </div>
+        <div class="form-row2">
+          <div class="form-group"><label>CPU Request</label><input class="form-input" id="w-cpu-req" value="100m" oninput="updateYamlPreview()"></div>
+          <div class="form-group"><label>CPU Limit</label><input class="form-input" id="w-cpu-lim" value="500m" oninput="updateYamlPreview()"></div>
+        </div>
+        <div class="form-row2">
+          <div class="form-group"><label>Memory Request</label><input class="form-input" id="w-mem-req" value="128Mi" oninput="updateYamlPreview()"></div>
+          <div class="form-group"><label>Memory Limit</label><input class="form-input" id="w-mem-lim" value="512Mi" oninput="updateYamlPreview()"></div>
+        </div>
+        <div class="form-row2">
+          <div class="form-group"><label>Namespace</label>
+            <select class="form-input" id="w-ns" oninput="updateYamlPreview()">
+              <option>default</option><option>staging</option><option>production</option>
+            </select>
+          </div>
+          <div class="form-group"><label>Strategy</label>
+            <select class="form-input" id="w-strategy" oninput="updateYamlPreview()">
+              <option>RollingUpdate</option><option>Recreate</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Health Check Path</label>
+          <input class="form-input" id="w-health" value="/healthz" oninput="updateYamlPreview()">
+        </div>
+        <div class="form-group">
+          <label>Environment Variables</label>
+          <textarea class="form-input" id="w-envs" rows="3" placeholder="KEY=VALUE&#10;ANOTHER=value" oninput="updateYamlPreview()"></textarea>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:4px">
+          <button class="hdr-btn accent big-btn" onclick="applyDeploy()">🚀 Apply to Cluster</button>
+          <button class="hdr-btn big-btn" onclick="showView('deployments')">Cancel</button>
+        </div>
+      </div>
+      <div class="card yaml-preview-card">
+        <div class="card-header"><span class="card-title">YAML Preview</span><button class="card-link" onclick="copyYaml()">Copy</button></div>
+        <pre class="yaml-pre" id="yaml-preview"></pre>
+      </div>
+    </div>
+  </div>
+</div><!-- end view-container -->
+</main>
+</div>
+
+<div class="toast" id="toast"></div>
+<div class="pod-modal" id="pod-modal" style="display:none" onclick="closePodModal(event)">
+<div class="pod-modal-inner">
+  <div class="card-header" style="margin-bottom:12px">
+    <span class="card-title" id="modal-title">Pod Details</span>
+    <button class="card-link" onclick="document.getElementById('pod-modal').style.display='none'">✕ Close</button>
+  </div>
+  <div id="modal-body"></div>
+</div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
+
+       
