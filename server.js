@@ -89,3 +89,28 @@ function k8sRequest(method, apiPath, body) {
     req.end();
   });
 }
+// ── Stream logs from kubectl (SSE) ──────────────────────────
+function streamLogs(res, namespace, podName, container) {
+    res.writeHead(200, {
+      'Content-Type':  'text/event-stream',
+      'Cache-Control': 'no-cache',
+      'Connection':    'keep-alive',
+      'Access-Control-Allow-Origin': '*',
+    });
+  
+    const args = ['logs', podName, '-n', namespace, '--follow', '--tail=100', '--timestamps'];
+    if (container) args.push('-c', container);
+  
+    const proc = spawn('kubectl', args);
+    proc.stdout.on('data', chunk => {
+      chunk.toString().split('\n').filter(Boolean).forEach(line => {
+        res.write(`data: ${JSON.stringify({ line })}\n\n`);
+      });
+    });
+    proc.stderr.on('data', chunk => {
+      res.write(`data: ${JSON.stringify({ error: chunk.toString() })}\n\n`);
+    });
+    proc.on('close', () => { res.write('data: {"done":true}\n\n'); res.end(); });
+    res.on('close', () => proc.kill());
+  }
+  
