@@ -1,6 +1,5 @@
 // ============================================
-// KubeOps Pro — app.js
-// Full Kubernetes Dashboard — Real + Simulated
+// KubernetesOp
 // ============================================
 
 // ---- SERVER CONNECTION ----

@@ -1,0 +1,17 @@
+{
+    "name": "kubeops-pro",
+    "version": "2.0.0",
+    "description": "Production-grade Kubernetes dashboard with real cluster connectivity",
+    "main": "server.js",
+    "scripts": {
+      "start": "node server.js",
+      "dev": "node server.js"
+    },
+    "engines": {
+      "node": ">=16.0.0"
+    },
+    "keywords": ["kubernetes", "dashboard", "kubectl", "devops", "k8s"],
+    "author": "",
+    "license": "MIT",
+    "dependencies": {}
+  }

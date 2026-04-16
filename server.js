@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // ============================================================
-// KubeOps Pro — server.js
+// KubernetesOp— server.js
 // Lightweight proxy: browser to go from and to Kubernetes API
 //
 // Usage:
