@@ -377,3 +377,16 @@ function runKubectlCommand(args) {
     } catch (e) { send(500, { error: e.message }); }
     return;
   }
+
+  // Static file serving (serve the dashboard itself)
+  if (req.method === 'GET') {
+    let filePath = url.pathname === '/' ? '/index.html' : url.pathname;
+    filePath = path.join(__dirname, filePath);
+    if (fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
+      const ext  = path.extname(filePath);
+      const mime = MIME[ext] || 'application/octet-stream';
+      res.writeHead(200, { 'Content-Type': mime });
+      fs.createReadStream(filePath).pipe(res);
+      return;
+    }
+  }
