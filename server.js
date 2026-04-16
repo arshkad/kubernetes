@@ -24,7 +24,7 @@ function loadKubeConfig() {
     path.join(process.env.HOME || process.env.USERPROFILE, '.kube', 'config');
 
   if (!fs.existsSync(kubeconfigPath)) {
-    console.error('❌  No kubeconfig found at', kubeconfigPath);
+    console.error(' No kubeconfig found at', kubeconfigPath);
     console.error('    Make sure kubectl is configured and you are logged into a cluster.');
     process.exit(1);
   }
@@ -50,13 +50,13 @@ function loadKubeConfig() {
       server,
     };
   } catch (err) {
-    console.error('❌  Could not read kubeconfig:', err.message);
+    console.error(' Could not read kubeconfig:', err.message);
     process.exit(1);
   }
 }
 
 const kube = loadKubeConfig();
-console.log(`\n✅  Connected to cluster via context: ${kube.context}`);
+console.log(`\n Connected to cluster via context: ${kube.context}`);
 console.log(`    API server: ${kube.server}\n`);
 
 // ── Forward a request to the Kubernetes API ──────────────────
@@ -390,3 +390,5 @@ function runKubectlCommand(args) {
       return;
     }
   }
+  send(404, { error: 'Not found' });
+});
