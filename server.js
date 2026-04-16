@@ -392,3 +392,19 @@ function runKubectlCommand(args) {
   }
   send(404, { error: 'Not found' });
 });
+// ── Helpers ──────────────────────────────────────────────────
+function calcAge(timestamp) {
+    if (!timestamp) return '—';
+    const diff = Date.now() - new Date(timestamp).getTime();
+    const s = Math.floor(diff / 1000);
+    if (s < 60)   return `${s}s`;
+    if (s < 3600) return `${Math.floor(s/60)}m`;
+    if (s < 86400) return `${Math.floor(s/3600)}h`;
+    return `${Math.floor(s/86400)}d`;
+  }
+  
+  server.listen(PORT, () => {
+    console.log(`🚀  KubeOps Pro server running at http://localhost:${PORT}`);
+    console.log(`    Dashboard: http://localhost:${PORT}`);
+    console.log(`    API:       http://localhost:${PORT}/api/*\n`);
+  });
