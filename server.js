@@ -113,4 +113,72 @@ function streamLogs(res, namespace, podName, container) {
     proc.on('close', () => { res.write('data: {"done":true}\n\n'); res.end(); });
     res.on('close', () => proc.kill());
   }
+// ── kubectl exec (terminal) via kubectl subprocess ───────────
+function runKubectlCommand(args) {
+    return new Promise((resolve) => {
+      try {
+        const output = execSync(`kubectl ${args.join(' ')}`, {
+          encoding: 'utf8',
+          timeout: 15000,
+          maxBuffer: 1024 * 512,
+        });
+        resolve({ stdout: output, stderr: '', exitCode: 0 });
+      } catch (err) {
+        resolve({
+          stdout: err.stdout || '',
+          stderr: err.stderr || err.message,
+          exitCode: err.status || 1,
+        });
+      }
+    });
+  }
+  
+  // ── Apply YAML via kubectl apply ─────────────────────────────
+  function applyYaml(yamlText) {
+    return new Promise((resolve) => {
+      const tmpFile = path.join(require('os').tmpdir(), `kubeops-${Date.now()}.yaml`);
+      try {
+        fs.writeFileSync(tmpFile, yamlText, 'utf8');
+        const output = execSync(`kubectl apply -f ${tmpFile}`, {
+          encoding: 'utf8',
+          timeout: 30000,
+        });
+        fs.unlinkSync(tmpFile);
+        resolve({ success: true, output: output.trim() });
+      } catch (err) {
+        try { fs.unlinkSync(tmpFile); } catch {}
+        resolve({ success: false, output: (err.stdout || '') + (err.stderr || err.message) });
+      }
+    });
+  }
+  
+  // ── MIME types for static files ──────────────────────────────
+  const MIME = {
+    '.html': 'text/html',
+    '.css':  'text/css',
+    '.js':   'application/javascript',
+    '.json': 'application/json',
+    '.ico':  'image/x-icon',
+  };
+  
+  // ── HTTP server ──────────────────────────────────────────────
+  const server = http.createServer(async (req, res) => {
+    const url = new URL(req.url, `http://localhost:${PORT}`);
+  
+    // CORS
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+    if (req.method === 'OPTIONS') { res.writeHead(204); res.end(); return; }
+  
+    const send = (status, data) => {
+      const body = typeof data === 'string' ? data : JSON.stringify(data);
+      res.writeHead(status, { 'Content-Type': 'application/json' });
+      res.end(body);
+    };
+  
+    // ── Read body helper ────────────────────────────────────────
+    const readBody = () => new Promise(r => {
+      let d = ''; req.on('data', c => d += c); req.on('end', () => r(d));
+    });
   
