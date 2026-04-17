@@ -365,4 +365,100 @@ body {
   .dot-green { width: 5px; height: 5px; border-radius: 50%; background: var(--green); display: inline-block; }
   .dot-amber { width: 5px; height: 5px; border-radius: 50%; background: var(--amber); display: inline-block; }
   .dot-red   { width: 5px; height: 5px; border-radius: 50%; background: var(--red); display: inline-block; }
+/* ============ DASH GRID ============ */
+.dash-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-auto-rows: auto;
+    gap: 12px;
+  }
+  .span2 { grid-column: span 2; }
+  .span3 { grid-column: span 3; }
   
+  .chart-legend { display: flex; gap: 12px; }
+  .leg-item { display: flex; align-items: center; gap: 4px; font-size: 10px; color: var(--text3); }
+  .leg-dot { width: 8px; height: 3px; border-radius: 2px; display: inline-block; }
+  
+  /* Resource chart canvas */
+  #resource-chart { display: block; width: 100% !important; padding: 12px 16px; }
+  
+  /* Node mini */
+  .node-mini-grid { padding: 12px 16px; display: grid; gap: 10px; }
+  .node-mini-item { }
+  .node-mini-header { display: flex; justify-content: space-between; margin-bottom: 4px; font-size: 11px; }
+  .node-mini-name { font-family: var(--font-mono); color: var(--text2); }
+  .bar-wrap { height: 4px; background: var(--bg4); border-radius: 2px; overflow: hidden; margin-bottom: 2px; }
+  .bar-inner { height: 100%; border-radius: 2px; transition: width .5s; }
+  .bar-cyan { background: var(--cyan); }
+  .bar-purple { background: var(--purple); }
+  
+  /* Ring */
+  .ring-wrap { position: relative; display: flex; justify-content: center; align-items: center; padding: 14px 0 8px; }
+  .ring-center {
+    position: absolute;
+    text-align: center;
+    font-family: var(--font-display);
+    font-size: 18px;
+    font-weight: 800;
+    color: var(--text);
+    pointer-events: none;
+    line-height: 1.2;
+  }
+  .ring-center small { font-size: 10px; color: var(--text3); font-weight: 400; }
+  .ring-legend { display: flex; flex-direction: column; gap: 5px; padding: 0 16px 14px; }
+  .rl-item { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--text2); }
+  .rl-dot { width: 8px; height: 8px; border-radius: 2px; flex-shrink: 0; }
+  .rl-count { margin-left: auto; font-family: var(--font-mono); font-size: 11px; }
+  
+  /* Dash events */
+  #dash-events { padding: 0 0 4px; }
+  .dash-event { display: flex; align-items: flex-start; gap: 10px; padding: 8px 16px; border-bottom: 1px solid var(--border); }
+  .dash-event:last-child { border-bottom: none; }
+  .de-type { flex-shrink: 0; }
+  .de-obj { font-family: var(--font-mono); font-size: 10px; color: var(--text3); }
+  .de-msg { font-size: 11px; color: var(--text2); }
+  .de-time { margin-left: auto; font-size: 10px; color: var(--text3); white-space: nowrap; flex-shrink: 0; }
+  
+  /* Quick actions */
+  .quick-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; padding: 12px 16px; }
+  .qa-btn {
+    font-family: var(--font-display);
+    font-size: 11px;
+    font-weight: 600;
+    padding: 8px 10px;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--text2);
+    cursor: pointer;
+    transition: all .15s;
+    text-align: left;
+  }
+  .qa-btn:hover { background: var(--bg4); color: var(--text); border-color: var(--border2); }
+  
+  /* ============ TABLES ============ */
+  .data-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  .data-table th {
+    padding: 9px 12px;
+    text-align: left;
+    font-size: 9px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    color: var(--text3);
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+  }
+  .data-table td {
+    padding: 9px 12px;
+    color: var(--text2);
+    border-bottom: 1px solid var(--border);
+    vertical-align: middle;
+  }
+  .data-table tr:last-child td { border-bottom: none; }
+  .data-table tbody tr { transition: background .1s; }
+  .data-table tbody tr:hover td { background: var(--bg3); }
+  
+  .mono { font-family: var(--font-mono) !important; font-size: 11px !important; }
+  .muted { color: var(--text3) !important; }
+  .teal { color: var(--teal) !important; }  
