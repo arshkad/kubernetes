@@ -461,4 +461,46 @@ body {
   
   .mono { font-family: var(--font-mono) !important; font-size: 11px !important; }
   .muted { color: var(--text3) !important; }
-  .teal { color: var(--teal) !important; }  
+  .teal { color: var(--teal) !important; }
+  
+  /* ============ BADGES ============ */
+.badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    font-size: 10px;
+    font-weight: 600;
+    padding: 2px 7px;
+    border-radius: 20px;
+    font-family: var(--font-display);
+    white-space: nowrap;
+  }
+  .badge.running, .badge.success { background: rgba(52,211,153,.12); color: #34d399; border: 1px solid rgba(52,211,153,.25); }
+  .badge.pending { background: rgba(251,191,36,.12); color: #fbbf24; border: 1px solid rgba(251,191,36,.25); }
+  .badge.failed, .badge.error { background: rgba(248,113,113,.12); color: #f87171; border: 1px solid rgba(248,113,113,.25); }
+  .badge.terminating { background: rgba(167,139,250,.12); color: #a78bfa; border: 1px solid rgba(167,139,250,.25); }
+  .badge.completed { background: rgba(0,212,255,.12); color: #00d4ff; border: 1px solid rgba(0,212,255,.25); }
+  .badge.warn-type { background: rgba(251,191,36,.12); color: #fbbf24; border: 1px solid rgba(251,191,36,.25); }
+  
+  /* ============ PROGRESS BARS ============ */
+  .prog-wrap { display: flex; align-items: center; gap: 6px; }
+  .prog { height: 4px; width: 64px; background: var(--bg4); border-radius: 2px; overflow: hidden; }
+  .prog-fill { height: 100%; border-radius: 2px; transition: width .5s; }
+  .p-green { background: var(--green); }
+  .p-amber { background: var(--amber); }
+  .p-red { background: var(--red); }
+  .p-cyan { background: var(--cyan); }
+  .prog-text { font-family: var(--font-mono); font-size: 10px; color: var(--text3); min-width: 28px; }
+  
+  /* ============ SCALE CONTROLS ============ */
+  .scale-ctrl { display: flex; align-items: center; gap: 5px; }
+  .sc-btn {
+    width: 22px; height: 22px;
+    background: var(--bg4); border: 1px solid var(--border2);
+    border-radius: 4px; color: var(--text2);
+    cursor: pointer; font-size: 13px; font-weight: 600;
+    display: flex; align-items: center; justify-content: center;
+    transition: all .1s;
+  }
+  .sc-btn:hover { background: var(--bg3); color: var(--text); }
+  .sc-num { font-family: var(--font-mono); font-size: 12px; min-width: 20px; text-align: center; color: var(--text); }
