@@ -536,3 +536,64 @@ body {
     cursor: pointer;
     outline: none;
   }
+  /* ============ TABS ============ */
+.tabs-row { display: flex; gap: 4px; margin-bottom: 12px; }
+.tab {
+  font-family: var(--font-display);
+  font-size: 12px; font-weight: 600;
+  padding: 6px 14px;
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: var(--radius); color: var(--text3); cursor: pointer;
+  transition: all .15s;
+}
+.tab:hover { color: var(--text2); background: var(--bg3); }
+.tab.active { color: var(--cyan); border-color: rgba(0,212,255,.4); background: rgba(0,212,255,.07); }
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+/* ============ NODE CARDS ============ */
+.node-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.node-card-big {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+}
+.nc-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+.nc-name { font-family: var(--font-mono); font-size: 13px; color: var(--text); font-weight: 500; }
+.nc-role { font-size: 9px; color: var(--text3); text-transform: uppercase; letter-spacing: .1em; margin-top: 2px; }
+.nc-resource { margin-top: 10px; }
+.nc-res-label { display: flex; justify-content: space-between; font-size: 10px; color: var(--text3); margin-bottom: 4px; font-family: var(--font-mono); }
+.nc-bar { height: 5px; background: var(--bg4); border-radius: 3px; overflow: hidden; }
+.nc-bar-fill { height: 100%; border-radius: 3px; transition: width .5s; }
+.nc-meta { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 12px; }
+.nc-meta-item { background: var(--bg3); border-radius: var(--radius); padding: 7px 10px; }
+.nc-meta-label { font-size: 9px; color: var(--text3); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 2px; }
+.nc-meta-val { font-family: var(--font-mono); font-size: 12px; color: var(--text); }
+
+/* ============ TRAFFIC DIAGRAM ============ */
+.traffic-diagram {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 20px 16px;
+  overflow-x: auto;
+}
+.td-box {
+  background: var(--bg3);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius);
+  padding: 10px 14px;
+  font-size: 11px;
+  font-family: var(--font-mono);
+  text-align: center;
+  white-space: nowrap;
+  line-height: 1.4;
+}
+.td-box small { font-size: 9px; color: var(--text3); display: block; }
+.td-box.ext { border-color: rgba(0,212,255,.4); color: var(--cyan); }
+.td-box.lb { border-color: rgba(167,139,250,.4); color: var(--purple); }
+.td-box.ing { border-color: rgba(251,191,36,.4); color: var(--amber); }
+.td-box.svc { border-color: rgba(52,211,153,.4); color: var(--green); font-size: 10px; }
+.td-arrow { color: var(--text3); font-size: 16px; flex-shrink: 0; }
+.td-col { display: flex; flex-direction: column; }
