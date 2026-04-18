@@ -703,3 +703,40 @@ body {
   white-space: pre;
   margin: 0;
 }
+/* ============ TINY BUTTONS ============ */
+.tiny-btn {
+    font-family: var(--font-display);
+    font-size: 10px;
+    font-weight: 600;
+    padding: 3px 8px;
+    background: var(--bg3);
+    border: 1px solid var(--border2);
+    border-radius: 4px;
+    color: var(--text2);
+    cursor: pointer;
+    transition: all .15s;
+  }
+  .tiny-btn:hover { background: var(--bg4); color: var(--text); }
+  .action-btns { display: flex; gap: 4px; }
+  
+  /* ============ TOAST ============ */
+  .toast {
+    position: fixed;
+    bottom: 20px; right: 20px;
+    background: var(--bg2);
+    border: 1px solid var(--border2);
+    border-radius: var(--radius-lg);
+    padding: 10px 16px;
+    font-size: 12px;
+    color: var(--text);
+    z-index: 9999;
+    opacity: 0;
+    transform: translateY(8px);
+    transition: all .25s;
+    pointer-events: none;
+    font-family: var(--font-display);
+    font-weight: 500;
+    box-shadow: 0 8px 24px rgba(0,0,0,.4);
+  }
+  .toast.show { opacity: 1; transform: translateY(0); }
+  
