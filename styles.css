@@ -739,4 +739,56 @@ body {
     box-shadow: 0 8px 24px rgba(0,0,0,.4);
   }
   .toast.show { opacity: 1; transform: translateY(0); }
+/* ============ POD MODAL ============ */
+.pod-modal {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,.7);
+    backdrop-filter: blur(4px);
+    z-index: 100;
+    display: flex; align-items: center; justify-content: center;
+    padding: 20px;
+  }
+  .pod-modal-inner {
+    background: var(--bg2);
+    border: 1px solid var(--border2);
+    border-radius: var(--radius-lg);
+    padding: 20px;
+    width: 100%;
+    max-width: 600px;
+    max-height: 80vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 60px rgba(0,0,0,.6);
+  }
   
+  /* Status expand row */
+  .pod-status-row { display: flex; align-items: center; gap: 6px; }
+  .expand-btn {
+    background: none; border: none; color: var(--text3);
+    cursor: pointer; font-size: 10px; padding: 2px 4px;
+  }
+  .expand-btn:hover { color: var(--text2); }
+  
+  /* Log output in modal */
+  .log-pre {
+    background: var(--bg);
+    border-radius: var(--radius);
+    padding: 12px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--green);
+    line-height: 1.8;
+    max-height: 300px;
+    overflow-y: auto;
+    margin-top: 10px;
+    white-space: pre-wrap;
+  }
+  
+  /* ============ MISC ============ */
+  .section-gap { margin-top: 16px; }
+  canvas { max-width: 100%; }
+  
+  /* Scrollbar global */
+  * { scrollbar-width: thin; scrollbar-color: var(--bg4) transparent; }
+  *::-webkit-scrollbar { width: 5px; height: 5px; }
+  *::-webkit-scrollbar-thumb { background: var(--bg4); border-radius: 3px; }
+    
