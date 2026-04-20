@@ -1059,7 +1059,7 @@ function updateClock() {
 window.addEventListener('DOMContentLoaded', async () => {
   initData();
   showView('dashboard');
-  await detectServer();   // check if server.js is running — loads real data if so
+  await detectServer();   // check if server.js is running 
   initTerminal();         // re-init after server detection so banner is correct
   setInterval(tick, 3000);
   setInterval(updateClock, 30000);
